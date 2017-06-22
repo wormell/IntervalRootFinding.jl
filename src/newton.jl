@@ -29,7 +29,7 @@ end
 
 doc"""If a root is known to be inside an interval,
 `newton_refine` iterates the interval Newton method until that root is found."""
-function newton_refine{T}(f::Function, f_prime::Function, x::Interval{T};
+function newton_refine{T}(f, f_prime, x::Interval{T};
                           tolerance=eps(T), debug=false)
 
     debug && (print("Entering newton_refine:"); @show x)
@@ -59,7 +59,7 @@ with its optional derivative `f_prime` and initial interval `x`.
 Optional keyword arguments give the `tolerance`, `maxlevel` at which to stop
 subdividing, and a `debug` boolean argument that prints out diagnostic information."""
 
-function newton{T}(f::Function, f_prime::Function, x::Interval{T}, level::Int=0;
+function newton{T}(f, f_prime, x::Interval{T}, level::Int=0;
                    tolerance=eps(T), debug=false, maxlevel=30)
 
     debug && (print("Entering newton:"); @show(level); @show(x))
@@ -137,15 +137,15 @@ end
 
 
 # use automatic differentiation if no derivative function given:
-newton{T}(f::Function, x::Interval{T};  args...) =
+newton{T}(f, x::Interval{T};  args...) =
     newton(f, x->D(f,x), x; args...)
 
 # newton for vector of intervals:
-newton{T}(f::Function, f_prime::Function, xx::Vector{Interval{T}}; args...) =
+newton{T}(f, f_prime, xx::Vector{Interval{T}}; args...) =
     vcat([newton(f, f_prime, @interval(x); args...) for x in xx]...)
 
-newton{T}(f::Function,  xx::Vector{Interval{T}}, level; args...) =
+newton{T}(f,  xx::Vector{Interval{T}}, level; args...) =
     newton(f, x->D(f,x), xx, 0, args...)
 
-newton{T}(f::Function,  xx::Vector{Root{T}}; args...) =
+newton{T}(f,  xx::Vector{Root{T}}; args...) =
     newton(f, x->D(f,x), [x.interval for x in xx], args...)
